@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>알뜰배차 — 결과 대시보드</title>
+<style>
+  /* 단일 다크 테마 (시연영상 전용, 의도적 선택) */
+  :root {
+    --surface: #1a1a19;
+    --panel: #232322;
+    --line: #3a3a38;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --ink-3: #8a897f;
+    --accent: #199e70;          /* 알뜰배차 브랜드 (aqua, slot3 dark) */
+    --m-light: #3987e5;         /* ax31-light  (slot1 dark) */
+    --m-mid: #d95926;           /* ax31        (slot2 dark) */
+    --m-think: #9085e9;         /* axk1-think  (slot7 dark) */
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--surface);
+    color: var(--ink);
+    font-family: -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    padding: 26px 34px;
+    display: flex; flex-direction: column; gap: 18px;
+    max-width: 1280px; margin: 0 auto;
+    font-variant-numeric: tabular-nums;
+  }
+  header { display: flex; justify-content: space-between; align-items: flex-end; }
+  .brand h1 { font-size: 30px; letter-spacing: -.01em; }
+  .brand h1 b { color: var(--accent); }
+  .brand p { color: var(--ink-2); font-size: 14px; margin-top: 4px; }
+  .hero { text-align: right; }
+  .hero .k { font-size: 12px; color: var(--ink-3); letter-spacing: .08em; }
+  .hero .v { font-size: 44px; font-weight: 700; line-height: 1.05; color: var(--accent); }
+  .hero .chips { display: flex; gap: 6px; justify-content: flex-end; margin-top: 6px; }
+  .chip {
+    font-size: 11.5px; padding: 3px 9px; border-radius: 99px;
+    border: 1px solid var(--line); color: var(--ink-2); background: var(--panel);
+  }
+  .chip.good { border-color: var(--accent); color: var(--accent); }
+
+  main { display: grid; grid-template-columns: 5fr 6fr; gap: 16px; flex: 1; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 16px 20px; display: flex; flex-direction: column; gap: 12px;
+  }
+  .card.wide { grid-column: 1 / -1; }
+  .card h2 { font-size: 14px; font-weight: 600; color: var(--ink-2); }
+  .card h2 small { color: var(--ink-3); font-weight: 400; margin-left: 6px; }
+
+  /* ── 점 도표: 최종 점수 비교 ── */
+  .dotplot { display: flex; flex-direction: column; gap: 13px; flex: 1; justify-content: center; }
+  .dp-row { display: grid; grid-template-columns: 118px 1fr 64px; align-items: center; gap: 10px; font-size: 13px; }
+  .dp-row .lbl { color: var(--ink-2); }
+  .dp-row .lbl.me { color: var(--ink); font-weight: 700; }
+  .dp-track { position: relative; height: 14px; }
+  .dp-track::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 6px; height: 2px;
+    background: var(--line); border-radius: 1px;
+  }
+  .dp-dot {
+    position: absolute; top: 2px; width: 10px; height: 10px; border-radius: 50%;
+    background: var(--ink-3); transform: translateX(-50%);
+    border: 2px solid var(--surface);
+  }
+  .dp-dot.me { background: var(--accent); width: 14px; height: 14px; top: 0; box-shadow: 0 0 0 3px rgba(25,158,112,.25); }
+  .dp-dot.oracle { background: var(--panel); border: 2px dashed var(--ink-3); }
+  .dp-row .val { text-align: right; color: var(--ink-2); }
+  .dp-row .val.me { color: var(--accent); font-weight: 700; }
+  .dp-axis { display: grid; grid-template-columns: 118px 1fr 64px; font-size: 11px; color: var(--ink-3); }
+  .dp-axis .ticks { display: flex; justify-content: space-between; }
+
+  /* ── 예산 게이지 ── */
+  .gauges { display: flex; flex-direction: column; gap: 14px; flex: 1; justify-content: center; }
+  .g-row { display: grid; grid-template-columns: 84px 1fr 120px; gap: 12px; align-items: center; }
+  .g-row .lbl { font-size: 13px; font-weight: 600; }
+  .g-row .lbl small { display: block; font-weight: 400; color: var(--ink-3); font-size: 11px; }
+  .g-track { position: relative; height: 22px; background: var(--surface); border-radius: 5px; border: 1px solid var(--line); }
+  .g-fill {
+    position: absolute; left: 0; top: 2px; bottom: 2px;
+    background: var(--accent); border-radius: 3px 4px 4px 3px; opacity: .9;
+    transition: width 1.4s cubic-bezier(.2,.8,.2,1);
+  }
+  .g-stress {
+    position: absolute; top: -3px; bottom: -3px; width: 0;
+    border-left: 2px dotted var(--ink-2);
+  }
+  .g-stress::after {
+    content: "스트레스 최악"; position: absolute; top: -15px; left: -34px;
+    font-size: 9.5px; color: var(--ink-3); white-space: nowrap;
+  }
+  .g-cap { position: absolute; right: 0; top: -3px; bottom: -3px; border-right: 2px solid var(--ink-2); }
+  .g-note { font-size: 12px; color: var(--ink-2); }
+  .g-note b { color: var(--accent); }
+
+  /* ── 모델 분포 스택 ── */
+  .stackwrap { display: flex; flex-direction: column; gap: 10px; }
+  .legend { display: flex; gap: 16px; font-size: 12px; color: var(--ink-2); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+  .st-row { display: grid; grid-template-columns: 84px 1fr 130px; gap: 12px; align-items: center; }
+  .st-row .lbl { font-size: 13px; font-weight: 600; }
+  .st-bar { display: flex; height: 26px; gap: 2px; }
+  .seg {
+    position: relative; border-radius: 3px; display: flex; align-items: center; justify-content: center;
+    font-size: 11.5px; color: var(--ink); font-weight: 600; min-width: 0; overflow: visible;
+    transition: filter .12s;
+  }
+  .seg:hover { filter: brightness(1.18); }
+  .seg span { text-shadow: 0 1px 2px rgba(0,0,0,.55); }
+  .st-q { font-size: 12px; color: var(--ink-2); text-align: right; }
+  .st-q b { color: var(--ink); }
+
+  footer { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-3);
+           font-family: ui-monospace, Menlo, monospace; }
+
+  .seg, .dp-dot { animation: pop .5s both; }
+  @keyframes pop { from { opacity: 0; transform: translateY(4px);} to { opacity: 1; } }
+  .dp-dot { animation-name: dotpop; }
+  @keyframes dotpop { from { opacity: 0; } to { opacity: 1; } }
+  #tip {
+    position: fixed; pointer-events: none; background: #0c0c0b; color: var(--ink);
+    border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; font-size: 12px;
+    opacity: 0; transition: opacity .1s; z-index: 9; white-space: nowrap;
+  }
+</style>
+</head>
+<body data-palette="#3987e5,#d95926,#9085e9">
+
+<header>
+  <div class="brand">
+    <h1><b>알뜰배차</b> 결과 대시보드</h1>
+    <p>예산 인지형 LLM 라우터 — 공개 Dev 880문항 · 공식 채점기 기준</p>
+  </div>
+  <div class="hero">
+    <div class="k">최종 점수 (가중 평균)</div>
+    <div class="v">0.6966</div>
+    <div class="chips">
+      <span class="chip good">✓ 3개 등급 예산 통과</span>
+      <span class="chip good">✓ 비용 +15% 스트레스 통과</span>
+      <span class="chip">등급당 9.5초 / 한도 90초</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <h2>최종 점수 비교 <small>0.55 – 0.85 구간</small></h2>
+    <div class="dotplot" id="dotplot"></div>
+    <div class="dp-axis"><span></span><span class="ticks"><span>0.55</span><span>0.65</span><span>0.75</span><span>0.85</span></span><span></span></div>
+  </section>
+
+  <section class="card">
+    <h2>등급별 예산 사용률 <small>비용비율 / 한도 — 막대 끝 실선이 한도</small></h2>
+    <div class="gauges" id="gauges"></div>
+  </section>
+
+  <section class="card wide">
+    <h2>등급별 모델 선택 분포 <small>880문항 배분 · 품질 점수</small>
+      <span class="legend" style="float:right">
+        <span><i style="background:var(--m-light)"></i>ax31-light (1×)</span>
+        <span><i style="background:var(--m-mid)"></i>ax31 (2.1×)</span>
+        <span><i style="background:var(--m-think)"></i>axk1-think (23×)</span>
+      </span>
+    </h2>
+    <div class="stackwrap" id="stacks"></div>
+  </section>
+</main>
+
+<footer>
+  <span>commit 0d98210c6f7d · docker.io/gangyub/ossp-router@sha256:3c04bcc3…b7e6c734</span>
+  <span>쉬운 문제는 싸게, 어려운 문제만 비싸게</span>
+</footer>
+
+<div id="tip"></div>
+
+<script>
+const DATA = {
+  scores: [
+    { name: "all-light",     v: 0.6193, cls: "" },
+    { name: "공식 베이스라인", v: 0.6954, cls: "", note: "예산 스트레스 미통과" },
+    { name: "알뜰배차",       v: 0.6966, cls: "me", note: "전 시나리오 예산 통과" },
+    { name: "Oracle 상한",   v: 0.7975, cls: "oracle", note: "정답을 아는 이론 상한" },
+  ],
+  tiers: [
+    { name: "Fast",     w: "가중치 0.4", q: 0.6693, ratio: 1.180, cap: 1.25, stress: 1.223, counts: [504, 376, 0]   },
+    { name: "Balanced", w: "가중치 0.3", q: 0.7006, ratio: 1.810, cap: 2.0,  stress: 1.979, counts: [283, 558, 39]  },
+    { name: "Premium",  w: "가중치 0.3", q: 0.7290, ratio: 3.510, cap: 4.0,  stress: 3.985, counts: [240, 519, 121] },
+  ],
+  models: ["ax31-light", "ax31", "axk1-think"],
+  colors: ["var(--m-light)", "var(--m-mid)", "var(--m-think)"],
+};
+
+const tip = document.getElementById("tip");
+function showTip(e, html) {
+  tip.innerHTML = html; tip.style.opacity = 1;
+  tip.style.left = Math.min(e.clientX + 14, innerWidth - 230) + "px";
+  tip.style.top = (e.clientY + 14) + "px";
+}
+function hideTip() { tip.style.opacity = 0; }
+
+/* 점 도표 */
+const D0 = 0.55, D1 = 0.85;
+const dp = document.getElementById("dotplot");
+for (const s of DATA.scores) {
+  const pct = ((s.v - D0) / (D1 - D0) * 100).toFixed(2);
+  const row = document.createElement("div");
+  row.className = "dp-row";
+  row.innerHTML =
+    `<span class="lbl ${s.cls === "me" ? "me" : ""}">${s.name}</span>` +
+    `<span class="dp-track"><span class="dp-dot ${s.cls}" style="left:${pct}%"></span></span>` +
+    `<span class="val ${s.cls === "me" ? "me" : ""}">${s.v.toFixed(4)}</span>`;
+  const dot = row.querySelector(".dp-dot");
+  dot.addEventListener("mousemove", e =>
+    showTip(e, `<b>${s.name}</b> ${s.v.toFixed(4)}${s.note ? `<br><span style="color:#8a897f">${s.note}</span>` : ""}`));
+  dot.addEventListener("mouseleave", hideTip);
+  dp.appendChild(row);
+}
+
+/* 예산 게이지 */
+const gg = document.getElementById("gauges");
+for (const t of DATA.tiers) {
+  const used = (t.ratio / t.cap * 100).toFixed(1);
+  const stress = (t.stress / t.cap * 100).toFixed(1);
+  const head = (100 - used).toFixed(1);
+  const row = document.createElement("div");
+  row.className = "g-row";
+  row.innerHTML =
+    `<span class="lbl">${t.name}<small>${t.w}</small></span>` +
+    `<span class="g-track">
+       <span class="g-fill" data-w="${used}" style="width:0%"></span>
+       <span class="g-stress" style="left:${stress}%"></span>
+       <span class="g-cap"></span>
+     </span>` +
+    `<span class="g-note"><b>${t.ratio.toFixed(3)}</b> / ${t.cap} <span style="color:var(--ink-3)">(여유 ${head}%)</span></span>`;
+  const track = row.querySelector(".g-track");
+  track.addEventListener("mousemove", e =>
+    showTip(e, `<b>${t.name}</b> 비용비율 ${t.ratio.toFixed(3)} / 한도 ${t.cap}` +
+               `<br><span style="color:#8a897f">스트레스 최악치 ${t.stress.toFixed(3)} — 한도 내</span>`));
+  track.addEventListener("mouseleave", hideTip);
+  gg.appendChild(row);
+}
+requestAnimationFrame(() => requestAnimationFrame(() => {
+  document.querySelectorAll('.g-fill').forEach(el => el.style.width = el.dataset.w + '%');
+}));
+
+/* 모델 분포 스택 */
+const st = document.getElementById("stacks");
+for (const t of DATA.tiers) {
+  const total = t.counts.reduce((a, b) => a + b, 0);
+  const row = document.createElement("div");
+  row.className = "st-row";
+  const segs = t.counts.map((c, i) => {
+    const w = (c / total * 100);
+    if (c === 0) return "";
+    return `<span class="seg" data-i="${i}" data-c="${c}" style="flex:0 0 calc(${w.toFixed(2)}% - 2px); background:${DATA.colors[i]}">` +
+           `${w > 6 ? `<span>${c}</span>` : ""}</span>`;
+  }).join("");
+  row.innerHTML =
+    `<span class="lbl">${t.name}</span>` +
+    `<span class="st-bar">${segs}</span>` +
+    `<span class="st-q">품질 <b>${t.q.toFixed(4)}</b></span>`;
+  row.querySelectorAll(".seg").forEach(el => {
+    const i = +el.dataset.i, c = +el.dataset.c;
+    el.addEventListener("mousemove", e =>
+      showTip(e, `<b>${DATA.models[i]}</b> ${c}문항 (${(c / total * 100).toFixed(1)}%) — ${t.name}`));
+    el.addEventListener("mouseleave", hideTip);
+  });
+  st.appendChild(row);
+}
+document.querySelectorAll('.seg').forEach((el, i) => el.style.animationDelay = (0.3 + i * 0.12) + 's');
+document.querySelectorAll('.dp-dot').forEach((el, i) => el.style.animationDelay = (0.2 + i * 0.15) + 's');
+</script>
+</body>
+</html>
