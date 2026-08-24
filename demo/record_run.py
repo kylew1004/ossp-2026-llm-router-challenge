@@ -129,7 +129,7 @@ console.print(Panel(
     Text.assemble(("최종 점수  ", "bold"), (final, f"bold {ACCENT}"),
                   ("    전량 경량 모델 0.6193  ·  공식 베이스라인 0.6954", "dim")),
     box=box.ROUNDED, border_style=ACCENT, padding=(0, 2)))
-snap("세 등급 모두 예산 통과, 최종 0.6966 — 비용이 15% 출렁여도 한도를 지키도록 설계했습니다", 13)
+snap("세 등급 모두 예산 통과 — 비용 15% 변동과 문항 구성 이동 스트레스까지 견디도록 설계했습니다", 13)
 
 # ── 장면 4: 결정성 ──
 rule(4, "결정성 — 문항 ID와 순서를 섞어도 같은 선택")

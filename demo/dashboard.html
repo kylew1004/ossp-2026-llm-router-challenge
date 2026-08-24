@@ -136,10 +136,10 @@
   </div>
   <div class="hero">
     <div class="k">최종 점수 (가중 평균)</div>
-    <div class="v">0.6966</div>
+    <div class="v">0.6773</div>
     <div class="chips">
       <span class="chip good">✓ 3개 등급 예산 통과</span>
-      <span class="chip good">✓ 비용 +15% 스트레스 통과</span>
+      <span class="chip good">✓ 300개 가상 채점셋 600/600 예산 통과</span>
       <span class="chip">등급당 9.5초 / 한도 90초</span>
     </div>
   </div>
@@ -170,7 +170,7 @@
 </main>
 
 <footer>
-  <span>commit 0d98210c6f7d · docker.io/gangyub/ossp-router@sha256:3c04bcc3…b7e6c734</span>
+  <span>commit (v2) · docker.io/gangyub/ossp-router@sha256:3c04bcc3…b7e6c734</span>
   <span>쉬운 문제는 싸게, 어려운 문제만 비싸게</span>
 </footer>
 
@@ -180,14 +180,14 @@
 const DATA = {
   scores: [
     { name: "all-light",     v: 0.6193, cls: "" },
-    { name: "공식 베이스라인", v: 0.6954, cls: "", note: "예산 스트레스 미통과" },
-    { name: "알뜰배차",       v: 0.6966, cls: "me", note: "전 시나리오 예산 통과" },
+    { name: "공식 베이스라인", v: 0.6954, cls: "", note: "실채점셋 Premium 예산 초과(0점) 전례" },
+    { name: "알뜰배차",       v: 0.6773, cls: "me", note: "300개 가상 채점셋 전부 예산 통과" },
     { name: "Oracle 상한",   v: 0.7975, cls: "oracle", note: "정답을 아는 이론 상한" },
   ],
   tiers: [
-    { name: "Fast",     w: "가중치 0.4", q: 0.6693, ratio: 1.180, cap: 1.25, stress: 1.223, counts: [504, 376, 0]   },
-    { name: "Balanced", w: "가중치 0.3", q: 0.7006, ratio: 1.810, cap: 2.0,  stress: 1.979, counts: [283, 558, 39]  },
-    { name: "Premium",  w: "가중치 0.3", q: 0.7290, ratio: 3.510, cap: 4.0,  stress: 3.985, counts: [240, 519, 121] },
+    { name: "Fast",     w: "가중치 0.4", q: 0.6426, ratio: 1.054, cap: 1.25, stress: 1.064, counts: [712, 168, 0]   },
+    { name: "Balanced", w: "가중치 0.3", q: 0.6861, ratio: 1.497, cap: 2.0,  stress: 1.609, counts: [330, 540, 10]  },
+    { name: "Premium",  w: "가중치 0.3", q: 0.7148, ratio: 2.227, cap: 4.0,  stress: 2.472, counts: [270, 551, 59] },
   ],
   models: ["ax31-light", "ax31", "axk1-think"],
   colors: ["var(--m-light)", "var(--m-mid)", "var(--m-think)"],

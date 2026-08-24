@@ -16562,9 +16562,9 @@
     }
   },
   "tier_safety_ratios": {
-    "balanced": 0.985,
-    "fast": 1.0,
-    "premium": 0.83
+    "balanced": 0.78,
+    "fast": 0.86,
+    "premium": 0.58
   },
   "training_summary": {
     "folds": 5,
@@ -16574,7 +16574,7 @@
     "optimizer": "numpy-ridge-oof-grid-v1",
     "outcomes_sha256": "97a5a787086b3e1d9fa9c7945518543540e527ea248df4a4760de581b612a4ba",
     "ridge_alpha": 3000.0,
-    "stress_clamp": "tier safety ratios clamped 2026-08-24 to pass cost-shift stress scenarios (light -5%, ax31 +10%, think +15%) on public dev; see baselines/README.md premium overrun precedent",
+    "stress_clamp": "tier safety ratios clamped 2026-08-25 (v3, robustness-first) to pass 300 resampled/recomposed dev subsets (sizes 250-880, bootstrap, Dirichlet domain mixes) x {base, cost-shift(light -5%, ax31 +10%, think +15%)} = 600/600 budget-pass with worst margin +0.048; see build/experiments/expE3-E5",
     "validation_input_sha256": "5920f9ea9e3da147aa546659054feb08afb7e11a0e4db6967b293ff79b759abc",
     "validation_num_episodes": 880,
     "validation_outcomes_sha256": "acb7c5ed522c4e1b65e9ab14b3fe9458fcba32eb3d9de8d3f53e24b8904d2e66"
