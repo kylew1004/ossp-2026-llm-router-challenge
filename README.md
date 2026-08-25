@@ -3,6 +3,32 @@ SPDX-FileCopyrightText: Copyright 2026 SK TELECOM CO., LTD.
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# 알뜰배차 — 예산 인지형 LLM 라우터
+
+**2026 오픈소스 개발자대회 SK텔레콤 지정과제 출품작**
+
+쉬운 문제는 싸게, 어려운 문제만 비싸게. 알뜰배차는 프롬프트 내용만 보고
+3개 후보 LLM 중 최적 모델을 선택해, 등급별 예산 안에서 평균 품질을
+극대화하는 학습형 라우터입니다. 예산 초과(등급 0점)를 막는 것을 1원칙으로,
+문항 수·도메인 구성·비용 변화를 모사한 300개 가상 채점셋 검증으로
+안전계수를 선택했습니다.
+
+- 공개 Dev 880문항 공식 채점 **0.6773** (전량 경량 모델 0.6193, oracle 0.7975)
+- 가상 채점셋 강건성: 구성·크기 이동 **0/1,200 실패** (시드 4종)
+- 등급당 실행 약 9.5초 (한도 90초), 표준 라이브러리 추론, 완전 재현 가능
+
+| 안내 | 위치 |
+| --- | --- |
+| 개발 문서 (설계·방법론·실험 기록) | [`ARCHITECTURE.md`](ARCHITECTURE.md) |
+| 라우터 구현 | [`src/ossp_router/hashregex_router.py`](src/ossp_router/hashregex_router.py) + [`resources/router-artifact.v1.json`](src/ossp_router/resources/router-artifact.v1.json) |
+| 학습 재현 | `baselines/train_hash_regex.py --hash-bins 2048 --alphas 1000,1700,3000,5600,10000` |
+| 강건성 검증 도구 | [`experiments/`](experiments/) — 안전계수 선택 근거와 기각 실험 기록 |
+| 라이브 데모·영상 재현 | [`demo/`](demo/) — `python3 demo/demo_rich.py` |
+
+이하는 과제(fork 원본) 안내입니다.
+
+---
+
 # Efficient LLM Routing Challenge
 
 **프롬프트 난이도·특성에 따라 최적 모델을 선택하는 compute-efficient routing
